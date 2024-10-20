@@ -74,9 +74,9 @@ $ npm run start:multi
 npm run test
 ```
 
-### Routers
+### Routes
 
-| Methods |                 Router                   | Description |
+| Methods |                 Route                   | Description |
 |:-------:|---------------------------------------|------------ |
 |   GET   | http://localhost:4000/api/users  |to get all users |
 |   GET   | http://localhost:4000/api/users/{:id} |to get user by id (uuid)|
