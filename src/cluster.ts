@@ -1,6 +1,6 @@
 import * as process from 'node:process';
-import { config } from 'dotenv';
-import { cpus } from 'node:os';
+import 'dotenv/config';
+import { availableParallelism } from 'node:os';
 import cluster from 'node:cluster';
 import {
   createServer,
@@ -12,10 +12,8 @@ import {
 
 import { requestHandler } from './middleware/requestHandler';
 
-config();
-
-const PORT: number = Number(process.env.PORT) || 4000;
-const numCPUs: number = cpus().length - 1;
+const PORT = Number(process.env.PORT) || 4000;
+const numCPUs = availableParallelism() - 1;
 
 if (cluster.isPrimary) {
   console.log(`Master ${process.pid} is running...`);
@@ -37,7 +35,7 @@ if (cluster.isPrimary) {
       const proxyRequest: ClientRequest = request(
         options,
         (workerRes): void => {
-          const statusCode: number = workerRes.statusCode ?? 500;
+          const statusCode = workerRes.statusCode ?? 500;
           res.writeHead(statusCode, workerRes.headers);
           workerRes.pipe(res, { end: true });
         },
@@ -57,9 +55,7 @@ if (cluster.isPrimary) {
     console.log(`Load Balancer is listening on PORT: ${PORT}`),
   );
 
-  for (let i = 0; i < numCPUs; i++) {
-    cluster.fork();
-  }
+  Array.from({ length: numCPUs }, () => cluster.fork());
 
   cluster.on('exit', (worker, code, signal): void => {
     console.log(
@@ -68,7 +64,6 @@ if (cluster.isPrimary) {
   });
 } else {
   const workerPort = PORT + (cluster.worker?.id || 1);
-
   const server = createServer(requestHandler);
 
   server.listen(workerPort, (): void => {

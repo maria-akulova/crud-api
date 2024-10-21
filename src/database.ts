@@ -26,7 +26,7 @@ if (cluster.isPrimary) {
   });
 }
 
-export const sharedMemory = {
+export const usersData = {
   get: (key: string): Promise<unknown> => {
     return new Promise((resolve): void => {
       if (cluster.isPrimary) {

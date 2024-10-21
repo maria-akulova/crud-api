@@ -1,16 +1,16 @@
 import { v4 } from 'uuid';
 import { IUser } from '../models/userModel';
-import { sharedMemory } from '../sharedMemory';
+import { usersData } from '../database';
 
 const USERS_KEY: string = 'users';
 
 const getUsers = async (): Promise<IUser[]> => {
-  const data = (await sharedMemory.get(USERS_KEY)) as IUser[] | undefined;
+  const data = (await usersData.get(USERS_KEY)) as IUser[] | undefined;
   return Array.isArray(data) ? (data as IUser[]) : [];
 };
 
 const setUsers = async (users: IUser[]): Promise<void> => {
-  sharedMemory.set(USERS_KEY, users);
+  usersData.set(USERS_KEY, users);
 };
 
 export const getAllUsers = async (): Promise<IUser[]> => getUsers();
@@ -55,7 +55,7 @@ export const deleteUser = async (id: string): Promise<boolean> => {
 
   users.splice(index, 1);
   await setUsers(users);
-  sharedMemory.delete('delete');
+  usersData.delete('delete');
 
   return true;
 };

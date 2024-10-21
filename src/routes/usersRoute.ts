@@ -16,26 +16,21 @@ export const handleUserRoutes = async (
   const { method } = req;
 
   if (pathname === '/api/users') {
-    if (method === HttpMethod.GET) {
-      await getAllUsers(req, res);
-      return true;
-    }
-    if (method === HttpMethod.POST) {
-      await createUser(req, res);
-      return true;
+    switch (method) {
+      case HttpMethod.GET:
+        await getAllUsers(req, res);
+        return true;
+      case HttpMethod.POST:
+        await createUser(req, res);
+        return true;
+      default:
+        return false; 
     }
   }
-
-  // ! This is only to test statusCode: 500 (ref: Technical requirements, Term 4)
-  /** Errors on the server side that occur during the processing of a request should be handled and processed correctly (server should
-   *  answer with status code `500` and corresponding human-friendly message)
-   *
-   *  - Please follow the conditional path, and you will have `statusCode: 500` */
 
   if (pathname === '/api/users/error') {
-    throw new Error('Test error');
+    throw new Error('OOoops, check the api path.');
   }
-  // ! End Of Test statusCode: 500
 
   const userIdMatch = pathname.match(/^\/api\/users\/([a-f0-9-]+)$/);
 
