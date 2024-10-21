@@ -4,16 +4,16 @@ import { IRequestBody } from '../src/models/userModel';
 
 const request = supertest(server);
 
-const mockUser: IRequestBody = {
-  username: 'John Smith',
-  age: 35,
-  hobbies: ['mock tests'],
+const houswife: IRequestBody = {
+  username: 'Anna Maria',
+  age: 17,
+  hobbies: ['music', 'sky'],
 };
 
-const updatedUser: IRequestBody = {
-  username: 'John Doe',
-  age: 40,
-  hobbies: ['unit testing', 'integration testing'],
+const oldGentelmen: IRequestBody = {
+  username: 'Emile DeBecaulaur',
+  age: 100,
+  hobbies: ['gardening', 'golf'],
 };
 
 const expectUser = (received: unknown, expected: IRequestBody): void => {
@@ -24,7 +24,7 @@ const expectUser = (received: unknown, expected: IRequestBody): void => {
   });
 };
 
-describe('User API', (): void => {
+describe('Crud-API of user', (): void => {
   beforeAll((): void => {
     const PORT: string | 4001 = process.env.PORT || 4001;
     server.close();
@@ -39,29 +39,62 @@ describe('User API', (): void => {
 
   let createdUserId: string;
 
-  describe('GET /api/users', (): void => {
-    it('should return an empty array', async (): Promise<void> => {
+  describe('Get all users', (): void => {
+    it('should return an empty array at start', async (): Promise<void> => {
       const { status, body } = await request.get('/api/users');
       expect(status).toBe(200);
       expect(body).toStrictEqual([]);
     });
   });
 
-  describe('POST /api/users', (): void => {
-    it('should create and return a new user containing expected records', async (): Promise<void> => {
+  describe('Create new user', (): void => {
+    it('Create new houswife', async (): Promise<void> => {
       const { status, body } = await request
         .post('/api/users')
-        .send(mockUser)
+        .send(houswife)
         .set('Content-Type', 'application/json');
 
       createdUserId = body.id;
       expect(status).toBe(201);
       expect(body).toHaveProperty('id');
-      expectUser(body, mockUser);
+      expectUser(body, houswife);
     });
+  });
 
-    it('should return 400 "Invalid request body..." while creating User with missing props', async (): Promise<void> => {
-      const incompleteUser = { username: 'Noname' };
+  describe('Receive just created user details', (): void => {
+    it('User created with correct params', async (): Promise<void> => {
+      const { status, body } = await request.get(`/api/users/${createdUserId}`);
+
+      expect(status).toBe(200);
+      expect(body).toHaveProperty('id', createdUserId);
+      expectUser(body, houswife);
+    });
+  });
+
+  describe('Update user details', (): void => {
+    it('Update user by ID', async (): Promise<void> => {
+      const { status, body } = await request
+        .put(`/api/users/${createdUserId}`)
+        .send(oldGentelmen)
+        .set('Content-Type', 'application/json');
+
+      expect(status).toBe(200);
+      expect(body).toHaveProperty('id', createdUserId);
+      expectUser(body, oldGentelmen);
+    });
+  });
+
+  describe('Delete user', (): void => {
+    it('Delete user by ID', async (): Promise<void> => {
+      const { status } = await request.delete(`/api/users/${createdUserId}`);
+
+      expect(status).toBe(204);
+    });
+  });
+
+  describe('Errors', (): void => {
+    it('Missing props', async (): Promise<void> => {
+      const incompleteUser = { username: 'guest' };
       const message =
         'Invalid request body: username, age, and hobbies are required';
       const { status, body } = await request
@@ -72,54 +105,21 @@ describe('User API', (): void => {
       expect(status).toBe(400);
       expect(body).toHaveProperty('message', message);
     });
-  });
 
-  describe('GET /api/users/:id', (): void => {
-    it('should return created user by ID', async (): Promise<void> => {
-      const { status, body } = await request.get(`/api/users/${createdUserId}`);
-
-      expect(status).toBe(200);
-      expect(body).toHaveProperty('id', createdUserId);
-      expectUser(body, mockUser);
-    });
-  });
-
-  describe('PUT /api/users/:id', (): void => {
-    it('should update and return created user by ID', async (): Promise<void> => {
-      const { status, body } = await request
-        .put(`/api/users/${createdUserId}`)
-        .send(updatedUser)
-        .set('Content-Type', 'application/json');
-
-      expect(status).toBe(200);
-      expect(body).toHaveProperty('id', createdUserId);
-      expectUser(body, updatedUser);
-    });
-  });
-
-  describe('DELETE /api/users/:id', (): void => {
-    it('should delete created user by ID', async (): Promise<void> => {
-      const { status } = await request.delete(`/api/users/${createdUserId}`);
-
-      expect(status).toBe(204);
-    });
-  });
-
-  describe('GET /api/users/:id (non-existent user)', (): void => {
-    it('should return 404 "User not found"', async (): Promise<void> => {
+    it('User not found', async (): Promise<void> => {
       const { status, body } = await request.get(`/api/users/${createdUserId}`);
 
       expect(status).toBe(404);
       expect(body).toHaveProperty('message', 'User not found');
     });
-  });
 
-  describe('GET /api/users/error (non-existent route)', (): void => {
-    it('should return 500 "Internal Server Error"', async (): Promise<void> => {
+    it('Internal Server Error', async (): Promise<void> => {
       const { status, body } = await request.get('/api/users/error');
 
       expect(status).toBe(500);
       expect(body).toHaveProperty('message', 'Internal Server Error');
     });
   });
+
+
 });

@@ -1,10 +1,6 @@
 import cluster from 'node:cluster';
-
-interface ClusterMessage {
-  action: 'get' | 'set' | 'delete';
-  key: string;
-  value?: unknown;
-}
+import { ClusterMessage } from './types';
+import { IUser } from './models/userModel';
 
 interface Database {
   [key: string]: unknown;
@@ -13,8 +9,8 @@ interface Database {
 const database: Database = {};
 
 if (cluster.isPrimary) {
-  cluster.on('message', (worker, msg: ClusterMessage): void => {
-    const { action, key, value } = msg;
+  cluster.on('message', (worker, workerMessage: ClusterMessage): void => {
+    const { action, key, value } = workerMessage;
 
     switch (action) {
       case 'get':
@@ -37,14 +33,14 @@ export const sharedMemory = {
         resolve(database[key]);
       } else {
         process.send?.({ action: 'get', key });
-        process.once('message', (msg: ClusterMessage): void => {
-          if (msg.key === key) resolve(msg.value);
+        process.once('message', (workerMessage: ClusterMessage): void => {
+          if (workerMessage.key === key) resolve(workerMessage.value);
         });
       }
     });
   },
 
-  set: (key: string, value: unknown): void => {
+  set: (key: string, value: IUser[]): void => {
     if (cluster.isPrimary) {
       database[key] = value;
     } else {
