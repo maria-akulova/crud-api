@@ -13,7 +13,7 @@
     "start": "npm run start:dev",
     "start:dev": "ts-node-dev src/index.ts",
     "start:prod": "webpack && node dist",
-    "start:multi": "ts-node-dev src/cluster.ts",
+    "start:multi": "ts-node-dev src/index.ts loadbalancer=true",
 
     "format": "prettier --write \"src/**/*.ts\"",
     "lint": "eslint \"src/**/*.ts\" --fix",
