@@ -1,6 +1,8 @@
 import { IncomingMessage, ServerResponse } from 'node:http';
 import { validate as isUuid } from 'uuid';
-import { IUser } from '../models/userModel';
+import { IUser, IRequestBody } from '../models/userModel';
+import { parseRequestBody } from '../middleware/parseRequestBody';
+import { createErrorResponse } from '../utils/errorHandler'
 import {
   getAllUsers as fetchAllUsers,
   getUserById as fetchUserById,
@@ -9,26 +11,13 @@ import {
   deleteUser as removeUser,
 } from '../services/userService';
 
-interface IRequestBody extends Omit<IUser, 'id'> {
-  username: string;
-  age: number;
-  hobbies: string[];
-}
-
-const parseRequestBody = (req: IncomingMessage): Promise<IRequestBody> => {
-  return new Promise((resolve, reject): void => {
-    let body = '';
-
-    req.on('data', (chunk) => (body += chunk));
-    req.on('end', (): void => {
-      try {
-        resolve(JSON.parse(body) as IRequestBody);
-      } catch {
-        reject(new Error('Invalid JSON'));
-      }
-    });
-    req.on('error', reject);
-  });
+const sendResponse = (
+  res: ServerResponse,
+  status: number,
+  data: unknown,
+): void => {
+  res.writeHead(status, { 'Content-Type': 'application/json' });
+  res.end(JSON.stringify(data));
 };
 
 export const getAllUsers = async (
@@ -37,29 +26,28 @@ export const getAllUsers = async (
 ): Promise<void> => {
   const users: IUser[] = fetchAllUsers();
 
-  res.writeHead(200, { 'Content-Type': 'application/json' });
-  res.end(JSON.stringify(users));
+  sendResponse(res, 200, users);
 };
 
 export const getUserById = async (
   _req: IncomingMessage,
   res: ServerResponse,
   id: string,
-) => {
+): Promise<void> => {
   if (!isUuid(id)) {
-    res.writeHead(400, { 'Content-Type': 'application/json' });
-    return res.end(JSON.stringify({ message: 'Invalid User ID or format' }));
+    return sendResponse(
+      res,
+      400,
+      createErrorResponse(400, 'Invalid User ID or format'),
+    );
   }
 
   const user: IUser | undefined = fetchUserById(id);
-
   if (!user) {
-    res.writeHead(404, { 'Content-Type': 'application/json' });
-    return res.end(JSON.stringify({ message: 'User not found' }));
+    return sendResponse(res, 404, createErrorResponse(404, 'User not found'));
   }
 
-  res.writeHead(200, { 'Content-Type': 'application/json' });
-  res.end(JSON.stringify(user));
+  sendResponse(res, 200, user);
 };
 
 export const createUser = async (req: IncomingMessage, res: ServerResponse) => {
@@ -68,17 +56,22 @@ export const createUser = async (req: IncomingMessage, res: ServerResponse) => {
       await parseRequestBody(req);
 
     if (!username || !age || !Array.isArray(hobbies)) {
-      res.writeHead(400, { 'Content-Type': 'application/json' });
-      return res.end(JSON.stringify({ message: 'Invalid request body' }));
+      return sendResponse(
+        res,
+        400,
+        createErrorResponse(
+          400,
+          'Invalid request body: username, age, and hobbies are required',
+        ),
+      );
     }
 
     const newUser: IUser = addUser({ username, age, hobbies });
 
-    res.writeHead(201, { 'Content-Type': 'application/json' });
-    res.end(JSON.stringify(newUser));
-  } catch {
-    res.writeHead(500, { 'Content-Type': 'application/json' });
-    res.end(JSON.stringify({ message: 'Internal server error' }));
+    sendResponse(res, 201, newUser);
+  } catch (error) {
+    console.error(error);
+    sendResponse(res, 500, createErrorResponse(500, 'Internal server error'));
   }
 };
 
@@ -86,26 +79,26 @@ export const updateUser = async (
   req: IncomingMessage,
   res: ServerResponse,
   id: string,
-) => {
+): Promise<void> => {
   if (!isUuid(id)) {
-    res.writeHead(400, { 'Content-Type': 'application/json' });
-    return res.end(JSON.stringify({ message: 'Invalid User ID or format' }));
+    return sendResponse(
+      res,
+      400,
+      createErrorResponse(400, 'Invalid User ID or format'),
+    );
   }
 
   try {
     const updatedData: Partial<Omit<IUser, 'id'>> = await parseRequestBody(req);
     const user: IUser | null = modifyUser(id, updatedData);
-
     if (!user) {
-      res.writeHead(404, { 'Content-Type': 'application/json' });
-      return res.end(JSON.stringify({ message: 'User not found' }));
+      return sendResponse(res, 404, createErrorResponse(404, 'User not found'));
     }
 
-    res.writeHead(200, { 'Content-Type': 'application/json' });
-    res.end(JSON.stringify(user));
-  } catch {
-    res.writeHead(500, { 'Content-Type': 'application/json' });
-    res.end(JSON.stringify({ message: 'Internal server error' }));
+    sendResponse(res, 200, user);
+  } catch (error) {
+    console.error(error);
+    sendResponse(res, 500, createErrorResponse(500, 'Internal server error'));
   }
 };
 
@@ -113,16 +106,18 @@ export const deleteUser = async (
   _req: IncomingMessage,
   res: ServerResponse,
   id: string,
-) => {
+): Promise<void> => {
   if (!isUuid(id)) {
-    res.writeHead(400, { 'Content-Type': 'application/json' });
-    return res.end(JSON.stringify({ message: 'Invalid UUID' }));
+    return sendResponse(
+      res,
+      400,
+      createErrorResponse(400, 'Invalid User ID or format'),
+    );
   }
 
   const success: boolean = removeUser(id);
   if (!success) {
-    res.writeHead(404, { 'Content-Type': 'application/json' });
-    return res.end(JSON.stringify({ message: 'User not found' }));
+    return sendResponse(res, 404, createErrorResponse(404, 'User not found'));
   }
 
   res.writeHead(204).end();
