@@ -15,9 +15,10 @@
     "test:verbose": "jest --passWithNoTests",
     
     "build": "webpack",
-    "start:dev": "ts-node-dev src/index.ts",
+    "start:dev": "ts-node-dev src/index.ts",    
     "start:prod": "webpack && node dist",
-    "start:multi": "webpack && node dist --cluster=enable"
+    "start:multi": "webpack && node dist loadBalancer=true",
+    "start:debug": "ts-node-dev --inspect -r ts-node/register src/index.ts"
   },
   "devDependencies": {
     "@babel/preset-env": "^7.22.5",
