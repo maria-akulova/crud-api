@@ -96,7 +96,7 @@ describe('Crud-API of user', (): void => {
     it('Missing props', async (): Promise<void> => {
       const incompleteUser = { username: 'guest' };
       const message =
-        'Invalid request body: username, age, and hobbies are required';
+        'Invalid request body. Check all data: username, age, hobbies. All data is required.';
       const { status, body } = await request
         .post('/api/users')
         .send(incompleteUser)
