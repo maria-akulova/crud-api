@@ -11,6 +11,16 @@ import {
   deleteUser as removeUser,
 } from '../services/userService';
 
+const message500 = 'Internal server error';
+const message404 = 'User not found';
+const response400 = (res: ServerResponse) => {
+  return sendResponse(
+    res,
+    400,
+    createErrorResponse(400, 'Invalid User ID or format'),
+  );
+}
+
 const sendResponse = (
   res: ServerResponse,
   status: number,
@@ -29,7 +39,7 @@ export const getAllUsers = async (
     sendResponse(res, 200, users);
   } catch (error) {
     console.error(error);
-    sendResponse(res, 500, createErrorResponse(500, 'Internal server error'));
+    sendResponse(res, 500, createErrorResponse(500, message500));
   }
 };
 
@@ -39,22 +49,18 @@ export const getUserById = async (
   id: string,
 ): Promise<void> => {
   if (!isUuid(id)) {
-    return sendResponse(
-      res,
-      400,
-      createErrorResponse(400, 'Invalid User ID or format'),
-    );
+    response400(res);    
   }
 
   try {
     const user: IUser | undefined = await fetchUserById(id);
     if (!user) {
-      return sendResponse(res, 404, createErrorResponse(404, 'User not found'));
+      return sendResponse(res, 404, createErrorResponse(404, message404));
     }
     sendResponse(res, 200, user);
   } catch (error) {
     console.error(error);
-    sendResponse(res, 500, createErrorResponse(500, 'Internal server error'));
+    sendResponse(res, 500, createErrorResponse(500, message500));
   }
 };
 
@@ -72,7 +78,7 @@ export const createUser = async (
         400,
         createErrorResponse(
           400,
-          'Invalid request body: username, age, and hobbies are required',
+          'Invalid request body. Check all data: username, age, hobbies. All data is required.',
         ),
       );
     }
@@ -82,7 +88,7 @@ export const createUser = async (
     sendResponse(res, 201, newUser);
   } catch (error) {
     console.error(error);
-    sendResponse(res, 500, createErrorResponse(500, 'Internal server error'));
+    sendResponse(res, 500, createErrorResponse(500, message500));
   }
 };
 
@@ -92,24 +98,20 @@ export const updateUser = async (
   id: string,
 ): Promise<void> => {
   if (!isUuid(id)) {
-    return sendResponse(
-      res,
-      400,
-      createErrorResponse(400, 'Invalid User ID or format'),
-    );
+    response400(res); 
   }
 
   try {
     const updatedData: Partial<Omit<IUser, 'id'>> = await parseRequestBody(req);
     const user: IUser | null = await modifyUser(id, updatedData);
     if (!user) {
-      return sendResponse(res, 404, createErrorResponse(404, 'User not found'));
+      return sendResponse(res, 404, createErrorResponse(404, message404));
     }
 
     sendResponse(res, 200, user);
   } catch (error) {
     console.error(error);
-    sendResponse(res, 500, createErrorResponse(500, 'Internal server error'));
+    sendResponse(res, 500, createErrorResponse(500, message500));
   }
 };
 
@@ -119,22 +121,17 @@ export const deleteUser = async (
   id: string,
 ): Promise<void> => {
   if (!isUuid(id)) {
-    return sendResponse(
-      res,
-      400,
-      createErrorResponse(400, 'Invalid User ID or format'),
-    );
+    response400(res); 
   }
 
   try {
     const success: boolean = await removeUser(id);
     if (!success) {
-      return sendResponse(res, 404, createErrorResponse(404, 'User not found'));
+      return sendResponse(res, 404, createErrorResponse(404, message404));
     }
-    // sendResponse(res, 200, { message: 'User deleted successfully' });
-    res.writeHead(204).end(); // <- First, I thought to return a message or new array of users, but the Term states to return 204
+    res.writeHead(204).end(); 
   } catch (error) {
     console.error(error);
-    sendResponse(res, 500, createErrorResponse(500, 'Internal server error'));
+    sendResponse(res, 500, createErrorResponse(500, message500));
   }
 };
