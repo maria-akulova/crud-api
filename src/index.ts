@@ -1,40 +1,29 @@
-import { createServer, IncomingMessage, ServerResponse } from 'http';
-import {  getAllUsers,
-    getUserById,
-    createUser,
-    updateUser,
-    deleteUser} from './controllers/userController';
 import * as process from 'node:process';
 import { config } from 'dotenv';
+import { createServer, IncomingMessage, ServerResponse } from 'http';
+import { handleUserRoutes } from './routes/userRoute';
+import {
+  notFoundHandler,
+  serverErrorHandler,
+} from './middleware/routeHandlers';
 
 config();
-const PORT: string | 3001 = process.env.PORT || 3001;
+const PORT: string | 5001 = process.env.PORT || 5001;
 
-const requestHandler = async (req: IncomingMessage, res: ServerResponse) => {
+const requestHandler = async (
+  req: IncomingMessage,
+  res: ServerResponse,
+): Promise<void> => {
   try {
-    const { method, url } = req;
-    if (url === `/api/users` && method === 'GET') {
-      return await getAllUsers(req, res);
-    }
-    if (url === `/api/users` && method === 'POST') {
-      return await createUser(req, res);
-    }
-    const userIdMatch = url?.match(/^\/api\/users\/([a-f0-9-]+)$/);
-    if (userIdMatch) {
-      const userId = userIdMatch[1];
-      if (method === 'GET') {
-        return await getUserById(req, res, userId);
-      }
-      if (method === 'PUT') {
-        return await updateUser(req, res, userId);
-      }
-      if (method === 'DELETE') {
-        return await deleteUser(req, res, userId);
-      }
-    }
+    const protocol: string | string[] =
+      req.headers['x-forwarded-proto'] || 'http';
+    const url = new URL(req.url ?? '', `${protocol}://${req.headers.host}`);
+    const pathname: string = url.pathname.replace(/\/$/, '');
+
+    const isHandled: boolean = await handleUserRoutes(req, res, pathname);
+    if (!isHandled) notFoundHandler(res);
   } catch {
-    res.writeHead(404, { 'Content-Type': 'application/json' });
-    res.end(JSON.stringify({ message: 'Not found' }));
+    serverErrorHandler(res);
   }
 };
 

@@ -4,3 +4,8 @@ export interface IUser {
   age: number;
   hobbies: string[];
 }
+export interface IRequestBody extends Omit<IUser, 'id'> {
+  username: string;
+  age: number;
+  hobbies: string[];
+}
