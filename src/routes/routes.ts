@@ -1,14 +1,14 @@
 import 'dotenv/config';
 import http from 'http';
 import { randomUUID } from 'crypto';
-import { userDB } from 'src/services/usersDB';
+import { getAllUsers } from '../services/userService'; 
 
 // Routes for handling user operations
 export const routes = (req: http.IncomingMessage, res: http.ServerResponse) => {
     if (req.url === '/users' && req.method === 'GET') {
         // GET all users
         res.writeHead(200, { 'Content-Type': 'application/json' });
-        res.end(JSON.stringify(userDB));
+        res.end(JSON.stringify(getAllUsers()));
     } else if (req.url === '/users' && req.method === 'POST') {
         // POST (Create a new user)
         let body = '';
@@ -19,7 +19,7 @@ export const routes = (req: http.IncomingMessage, res: http.ServerResponse) => {
             try {
                 const user = JSON.parse(body);
                 const newUser = { id: randomUUID(), ...user };
-                userDB.push(newUser); // Add user to in-memory DB
+                getAllUsers().push(newUser); // Add user to in-memory DB
                 res.writeHead(200, { 'Content-Type': 'application/json' });
                 res.end(JSON.stringify({ message: 'User created', user: newUser }));
             } catch {
