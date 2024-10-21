@@ -1,9 +1,9 @@
+
 import { resolve } from 'node:path';
-import { Configuration } from 'webpack'; // Import Webpack's Configuration type
 
 const isProduction = process.env.NODE_ENV === 'production';
 
-const config: Configuration = {
+const config = {
   target: 'node',
   mode: isProduction ? 'production' : 'development',
   entry: resolve(__dirname, 'src', 'index.ts'),
