@@ -74,6 +74,10 @@ $ npm run start:multi
 npm run test
 ```
 
+### Debug
+[Useful video](https://www.google.com/search?q=how+to+debug+node.js+with+typescript%3F&oq=how+to+debug+node.js+with+typescript%3F&gs_lcrp=EgZjaHJvbWUyBggAEEUYOTIHCAEQIRifBTIHCAIQIRifBTIHCAMQIRifBTIHCAQQIRiPAjIHCAUQIRiPAtIBCTExNjA3ajBqN6gCALACAA&sourceid=chrome&ie=UTF-8#fpstate=ive&vld=cid:ae0183e2,vid:6vWTgU8z1kY,st:0)
+
+
 ### Routes
 
 | Methods |                 Route                   | Description |
@@ -83,6 +87,7 @@ npm run test
 |  POST   | http://localhost:4000/api/users | to create record about new user and store it in database|
 |   PUT   | http://localhost:4000/api/users/{:id} | to update existing user (all fields required), could be use for creation new user|
 | DELETE  | http://localhost:4000/api/users/{:id} | to delete existing user from database|
+| | http://localhost:4000/api/users/error | to test error |
 
 ___
 

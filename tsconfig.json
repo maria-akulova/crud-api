@@ -1,29 +1,21 @@
 {
   "compilerOptions": {
     "baseUrl": "./",
-    "forceConsistentCasingInFileNames": true,
-    "allowSyntheticDefaultImports": true,
     "esModuleInterop": true,
+    "forceConsistentCasingInFileNames": true,
     "lib": ["ESNext"],
     "module": "CommonJS",
     "moduleResolution": "Node",
-    "noUncheckedIndexedAccess": true,
-    "strictNullChecks": false,
-    "noUnusedLocals": true,
-    "noUnusedParameters": true,
-    "noImplicitAny": false,
-    "outDir": "./dist",
+    "noImplicitAny": true,
+    "outDir": "./dist/",
     "removeComments": true,
     "resolveJsonModule": true,
     "skipLibCheck": true,
     "sourceMap": true,
     "strict": true,
-    "strictPropertyInitialization": false,
-    "target": "ES2023"
+    "target": "ESNext"
   },
   "files": ["src/index.ts"],
-  "include": ["src/**/*.ts", "webpack.config.ts", "babel.config.js", "jest.config.js"],
-
-  "exclude": ["node_modules", "test", "dist", "**/*spec.ts"]
+  "exclude": ["node_modules",
+    "__test__", "dist", "**/*spec.ts"]
 }
-
