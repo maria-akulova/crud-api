@@ -1,0 +1,11 @@
+{
+	"folders": [
+		{
+			"path": "."
+		},
+		{
+			"path": "../../check_students_work/server_crud_api"
+		}
+	],
+	"settings": {}
+}
