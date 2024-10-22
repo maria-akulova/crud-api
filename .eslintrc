@@ -38,7 +38,7 @@
        "import/prefer-default-export": "off",
        "max-lines-per-function": ["error", 50],
        "no-console": "off",
-       "no-debugger": "off",
+       "no-debugger": "error",
        "no-multiple-empty-lines": ["error", { "max": 2, "maxBOF": 0, "maxEOF": 1 }],
        "no-template-curly-in-string": "warn",
        "no-underscore-dangle": "off",
